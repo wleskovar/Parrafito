@@ -1,4 +1,12 @@
-const express= require('express');
+const express = require('express');
+const path = require('path');
+const methodOverride = require('method-override')
+const app = express();
+const publicPath = path.join(__dirname, '../../public');
+
+/* rutas */
+const rutaHome = require('../routes/home_route.js');
+
 
 class Server {
 
@@ -15,12 +23,27 @@ class Server {
 
     middleware() {
         // Directorio publico
-        this.app.use(express.static('public'));
-    }
+        this.app.use(express.static(publicPath));
 
+        this.app.set('view engine', 'ejs');
+        /* seteo donde esta el directorio "views" */
+        this.app.set('views',path.join(__dirname, '../views'));
+
+        /* configuracion para poder capturar la informacion de los formularios */
+        this.app.use(express.urlencoded({extended: false}));
+        this.app.use(express.json());
+        this.app.use(methodOverride('_method'));
+        
+    }
+    
     routes() {
-        this.app.get('/api', (req, res) =>{
-            res.send('hola mundo');
+        this.app.get('/', rutaHome);
+        this.app.get('/home', rutaHome);
+        
+        /*=======================================================================*/
+        /* Error 404 */ //Nota: este bloque debe ir siempre al final de las rutas
+        this.app.use((req, res, next) => {
+            res.status(404).render('notFound');
         });
     }
 
